@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"></script>
+        <script src="{{ url_for('static', filename='script.js') }}" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <div id="main">
+      
+
+        <br><br><br><br>
+
+        {% block content %}
+        {% endblock %}
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,95 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">Insta</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item mr-3">
+        <a class="btn btn-secondary active" href="/profile">My Posts</a>
+      </li>
+      <li class="nav-item mr-3">
+        <a class="btn btn-secondary" href="/create_post">Create Post </a>
+      </li>
+      <li class="nav-item mr-3">
+        <a class="btn btn-secondary" href="/logout">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div class="container bootdey">
+<div class="col-md-12 bootstrap snippets">
+
+<div class="panel">
+    <div class="panel-body">
+    <!-- Newsfeed Content -->
+    <!--===================================================-->
+    <!--===================================================-->
+    <!-- End Newsfeed Content -->
+
+
+    <!-- Newsfeed Content -->
+    {% for post in total_posts %}
+    <!--===================================================-->
+    <div class="media-block pad-all mt-5">
+      <a class="media-left" href="#"><img class="img-circle img-sm" alt="Profile Picture" src="https://bootdey.com/img/Content/avatar/avatar1.png"></a>
+      <div class="media-body">
+        <div class="mar-btm">
+          <a href="#" class="btn-link text-semibold media-heading box-inline">{{post.id}}</a>
+          <p class="text-muted text-sm"><i class="fa fa-mobile fa-lg"></i>{{post.upload_date}}</p>
+        </div>
+        <div class="d-inline-flex mb-3" id="post-{{loop.index}}">
+        <p >{{post.text}}</p>
+        <button class="btn btn-primary btn-sm ml-3" data-text="{{post.text}}" onclick="form_create(this,{{loop.index}})">Edit</button>
+        <a class="btn btn-sm btn-danger ml-2" href="/delete_post/{{post.id}}">Delete</a>
+      </div>
+      <div id="form-{{loop.index}}" class="hide">
+        <form method="POST" action="/update_post/{{post.id}}" enctype="multipart/form-data"> 
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Edit Post</label>
+            <textarea class="form-control" name="text" rows="3" required>{{post.text}}</textarea>
+          </div>
+          <img class="img-responsive thumbnail w-30 mt-3" src="{{post.image_url}}" alt="Image">
+            <div class="form-group mt-3">
+              <input type="file" class="form-control-file" name="image" accept="image/*">
+            </div>
+          
+          <button class="btn btn-primary">Submit</button>
+          <button class="btn btn-danger" type="button" onclick="form_cancel({{loop.index}})">Cancel</button>
+        </form>
+      </div>
+      <br>
+        <img class="img-responsive thumbnail w-30" id="img-{{loop.index}}" src="{{post.image_url}}" alt="Image">
+        <!-- Comments -->
+      </div>
+
+    <!--===================================================-->
+    <!-- End Newsfeed Content -->
+  </div>
+</div>
+{% endfor %}
+</div>
+</div>
+<script>
+  function form_create(elem,val){
+    var item =  elem.getAttribute("data-text")
+   document.getElementById("post-"+val).classList.add("hide")
+   document.getElementById("img-"+val).classList.add("hide")
+   document.getElementById("form-"+val).classList.remove("hide")
+
+ }
+ function form_cancel(val){
+   document.getElementById("post-"+val).classList.remove("hide")
+   document.getElementById("img-"+val).classList.remove("hide")
+   document.getElementById("form-"+val).classList.add("hide")
+
+ }
+</script>

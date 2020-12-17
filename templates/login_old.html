@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<div id="content">
+
+<br><br>
+
+<h2>Login Below</h2> 
+<br></br>
+
+<form action="/api/v1.0/storeLoginAPI/" method="POST">
+	Username:<input type="text" name="username" id="uname" />
+  <br></br>
+  Password: <input type="password" name="password" id="passw" />
+	<br></br>
+	<input class="button" type="submit" value="Login" />
+</form>
+
+<br><br>
+
+<p id="stat"></p>
+
+</div>
+{% endblock %}
