@@ -79,15 +79,41 @@ def load_user(user_id):
 @login_required
 def home():
     total_posts = Post.query.all()
+    total_posts_dict = {}
+    # total_posts_list = []
+    for p in total_posts:
+        # total_posts_dict["id"] = p.id
+        # total_posts_dict["text"] = p.text
+        # total_posts_dict["image_url"] = p.image_url
+        # total_posts_dict["upload_date"] = p.upload_date
+        # total_posts_dict["username"] = User.query.filter_by(id=p.user_id).first().username
+        # total_posts_list.append({
+        #     "id":p.id,
+        total_posts_dict[p.id] = {
+        "text":p.text,
+        "image_url":p.image_url,
+        "upload_date":p.upload_date,
+        "username": User.query.filter_by(id=p.user_id).first().username
+        }
     favourite_posts = []
     favourites = Follower.query.filter_by(follower=current_user.get_id()).all()
     for fav in favourites:
         posts = Post.query.filter_by(user_id=fav.user).all()
         for p in posts:
             favourite_posts.append(p.id)
-    print(favourite_posts)
-    print(total_posts)
-    return render_template('index.html', favourite_posts=favourite_posts, total_posts=total_posts)
+    # print(favourite_posts)
+    # print(total_posts)
+    # print(total_posts_dict)
+    sorted_posts = []
+    for p in favourite_posts:
+        sorted_posts.append(total_posts_dict[p])
+    
+    for k, v in total_posts_dict.items():
+        if k not in favourite_posts:
+            sorted_posts.append(v)
+    
+    print(sorted_posts)
+    return render_template('index.html', total_posts=sorted_posts)
 
 
 @app.route('/profile')
@@ -128,8 +154,13 @@ def logout():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def register():
-    username = "admin1"
-    password = "password123"
+    if request.method == "GET":
+        return render_template('signup.html')
+    elif request.method == "POST":
+        username = request.form.get('username')
+        password = request.form.get('password')
+    # username = "admin1"
+    # password = "password123"
     with app.app_context():
         user = User.query.filter_by(username=username).first()
 
@@ -193,13 +224,15 @@ def delete_post(post_id):
         return redirect('/')
 
 
-@app.route('/follow', methods=['GET'])
-def follow():
-    user_id = 14
+@app.route('/follow/<username>', methods=['GET'])
+def follow(username):
+    # follower_id = User.query.filter_by(username=follower).first().id
+    user_id = User.query.filter_by(username=username).first().id
     follower = current_user.get_id()
     f = Follower(user=user_id, follower=follower)
     db.session.add(f)
     db.session.commit()
+    return jsonify(message=True)
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
