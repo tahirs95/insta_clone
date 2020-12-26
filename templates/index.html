@@ -44,10 +44,19 @@
     <div class="media-block pad-all mt-5">
       <a class="media-left" href="#"><img class="img-circle img-sm" alt="Profile Picture" src="https://bootdey.com/img/Content/avatar/avatar1.png"></a>
       <div class="media-body">
+        <div class="d-inline-flex">
         <div class="mar-btm">
-          <a href="#" class="btn-link text-semibold media-heading box-inline">{{post.username}}</a>
+          <a href="#" class="btn-link text-semibold media-heading box-inline" id="name-{{loop.index}}" data-name="{{post.username}}">{{post.username}}</a>
           <p class="text-muted text-sm"><i class="fa fa-mobile fa-lg"></i>{{post.upload_date}}</p>
         </div>
+        <div id="button-{{loop.index}}">
+          {% if post.username in favourite_people %}
+          <h5 class='font-weight-bold ml-3'>Followed</h5>
+          {% else %}
+          <button class="btn btn-primary btn-sm ml-3" onclick="follow_user({{loop.index}})">Follow</button>
+         {% endif %}
+        </div>
+      </div>
         <p>{{post.text}}</p>
         <img class="img-responsive thumbnail w-30" src="{{post.image_url}}" alt="Image">
      
@@ -60,3 +69,21 @@
 {% endfor %}
 </div>
 </div>
+<script>
+  function follow_user(count){
+   var name = document.getElementById("name-"+count).getAttribute('data-name')
+   var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/follow/"+name,
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  if(response.message == true){
+    document.getElementById("button-"+count).innerHTML = "<h5 class='font-weight-bold ml-3'>Followed</h5>"
+  }
+});
+  }
+</script>

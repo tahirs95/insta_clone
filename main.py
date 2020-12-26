@@ -1,4 +1,6 @@
 import os, hashlib
+import csv
+import psycopg2
 from datetime import datetime
 from flask import Flask, jsonify, render_template, request, g, flash, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -56,25 +58,6 @@ class Topic(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# @app.route('/', methods=['GET', 'POST'])
-# def login1():
-#     if request.method == 'POST':
-#         f = request.files['image']
-#         filename = secure_filename(f.filename)
-#         f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) 
-#         url = app.config['UPLOAD_FOLDER'] + f.filename
-#         print(url)
-#         # uname, pword = (request.form['username'],request.form['password'])
-#         # result = db.engine.execute("SELECT * FROM users WHERE username = '%s' AND password = '%s'" %(uname,pword))
-#         # if result.fetchone():
-#         #     return redirect('/2')
-#         # else:
-#         #     result = {'status': 'fail'}
-#         # return jsonify(result)
-        
-#     # return render_template('login1.html')
-
-
 @app.route('/')
 @login_required
 def home():
@@ -82,13 +65,6 @@ def home():
     total_posts_dict = {}
     # total_posts_list = []
     for p in total_posts:
-        # total_posts_dict["id"] = p.id
-        # total_posts_dict["text"] = p.text
-        # total_posts_dict["image_url"] = p.image_url
-        # total_posts_dict["upload_date"] = p.upload_date
-        # total_posts_dict["username"] = User.query.filter_by(id=p.user_id).first().username
-        # total_posts_list.append({
-        #     "id":p.id,
         total_posts_dict[p.id] = {
         "text":p.text,
         "image_url":p.image_url,
@@ -96,14 +72,14 @@ def home():
         "username": User.query.filter_by(id=p.user_id).first().username
         }
     favourite_posts = []
+    favourite_people = []
     favourites = Follower.query.filter_by(follower=current_user.get_id()).all()
     for fav in favourites:
+        favourite_people.append(User.query.filter_by(id=fav.user).first().username)
         posts = Post.query.filter_by(user_id=fav.user).all()
         for p in posts:
             favourite_posts.append(p.id)
-    # print(favourite_posts)
-    # print(total_posts)
-    # print(total_posts_dict)
+
     sorted_posts = []
     for p in favourite_posts:
         sorted_posts.append(total_posts_dict[p])
@@ -112,8 +88,7 @@ def home():
         if k not in favourite_posts:
             sorted_posts.append(v)
     
-    print(sorted_posts)
-    return render_template('index.html', total_posts=sorted_posts)
+    return render_template('index.html', total_posts=sorted_posts, favourite_people=favourite_people)
 
 
 @app.route('/profile')
@@ -121,6 +96,71 @@ def home():
 def profile():
     total_posts = Post.query.filter_by(user_id=current_user.get_id()).all()
     return render_template('profile.html', total_posts=total_posts)
+
+
+@app.route('/dump_data')
+@login_required
+def dump_data():
+    users_query = """
+            SELECT * from users
+        """
+
+    posts_query = """
+            SELECT * from posts
+        """
+
+    followers_query = """
+            SELECT * from followers
+        """
+
+    topics_query = """
+            SELECT * from topics
+        """
+
+    conn = psycopg2.connect(database="insta", user="postgres", host="localhost", password="postgres")
+
+    cur = conn.cursor()
+    cur.execute(users_query)
+
+    with open('dump_data/users.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=',')
+        for row in cur.fetchall():
+            writer.writerow(row)
+
+    cur.close()
+
+    cur = conn.cursor()
+    cur.execute(posts_query)
+
+    with open('dump_data/posts.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=',')
+        for row in cur.fetchall():
+            writer.writerow(row)
+
+    cur.close()
+
+    cur = conn.cursor()
+    cur.execute(followers_query)
+
+    with open('dump_data/followers.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=',')
+        for row in cur.fetchall():
+            writer.writerow(row)
+
+    cur.close()
+
+    cur = conn.cursor()
+    cur.execute(topics_query)
+
+    with open('dump_data/topics.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=',')
+        for row in cur.fetchall():
+            writer.writerow(row)
+
+    cur.close()
+
+    conn.close()
+    return jsonify(message=True)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -137,8 +177,8 @@ def login():
         # check if user actually exists
         # take the user supplied password, hash it, and compare it to the hashed password in database
         if not user or not check_password_hash(user.password, password):
-            print('Please check your login details and try again.')
-            return redirect('/login') # if user doesn't exist or password is wrong, reload the page
+            flash('Please check your login details and try again.')
+            return render_template('login.html')
         print("Logged in")
         # if the above check passes, then we know the user has the right credentials
         login_user(user, remember=remember)
@@ -159,8 +199,7 @@ def register():
     elif request.method == "POST":
         username = request.form.get('username')
         password = request.form.get('password')
-    # username = "admin1"
-    # password = "password123"
+
     with app.app_context():
         user = User.query.filter_by(username=username).first()
 
@@ -226,7 +265,6 @@ def delete_post(post_id):
 
 @app.route('/follow/<username>', methods=['GET'])
 def follow(username):
-    # follower_id = User.query.filter_by(username=follower).first().id
     user_id = User.query.filter_by(username=username).first().id
     follower = current_user.get_id()
     f = Follower(user=user_id, follower=follower)

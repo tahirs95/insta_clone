@@ -10,6 +10,9 @@
     <h3 class="font-weight-bold">Login</h3>
     <div class="box">
         <form method="POST" action="/login">
+            {% for message in get_flashed_messages() %}
+                <p>{{ message }}</p>
+            {% endfor %}
             <div class="field">
                 <div class="form-group">
                     <input class="input is-large form-control" type="text" name="username" placeholder="Your Username" autofocus="" required>
