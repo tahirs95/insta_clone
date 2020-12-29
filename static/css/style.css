@@ -40,7 +40,6 @@ body{
 
 .media-block .media-body {
     display: block;
-    overflow: hidden;
     width: auto
 }
 
@@ -101,4 +100,8 @@ body{
 
 .mar-top {
     margin-top: 15px;
+}
+
+.box{
+    border: 1px solid black;
 }

@@ -80,7 +80,13 @@ def home():
         }
     favourite_posts = []
     favourite_people = []
-    favourites = Follower.query.filter_by(follower=current_user.get_id()).all()
+    follows_people = []
+    favourites = Favourite.query.filter_by(favourite=current_user.get_id()).all()
+    follows = Follower.query.filter_by(follower=current_user.get_id()).all()
+
+    for fl in follows:
+        follows_people.append(User.query.filter_by(id=fl.user).first().username)
+
     for fav in favourites:
         favourite_people.append(User.query.filter_by(id=fav.user).first().username)
         posts = Post.query.filter_by(user_id=fav.user).all()
@@ -95,7 +101,12 @@ def home():
         if k not in favourite_posts:
             sorted_posts.append(v)
     
-    return render_template('index.html', total_posts=sorted_posts, favourite_people=favourite_people)
+    return render_template(
+        'index.html',
+        total_posts=sorted_posts,
+        favourite_people=favourite_people,
+        follows_people=follows_people
+    )
 
 
 @app.route('/profile')
@@ -279,12 +290,31 @@ def follow(username):
     db.session.commit()
     return jsonify(message=True)
 
+
+@app.route('/unfollow/<username>', methods=['GET'])
+def unfollow(username):
+    user_id = User.query.filter_by(username=username).first().id
+    follower = current_user.get_id()
+    Follower.query.filter_by(user=user_id, follower=follower).delete()
+    db.session.commit()
+    return jsonify(message=True)
+
+
 @app.route('/favourite/<username>', methods=['GET'])
 def favourite(username):
     user_id = User.query.filter_by(username=username).first().id
     favourite = current_user.get_id()
     f = Favourite(user=user_id, favourite=favourite)
     db.session.add(f)
+    db.session.commit()
+    return jsonify(message=True)
+
+
+@app.route('/unfavourite/<username>', methods=['GET'])
+def unfavourite(username):
+    user_id = User.query.filter_by(username=username).first().id
+    favourite = current_user.get_id()
+    Favourite.query.filter_by(user=user_id, favourite=favourite).delete()
     db.session.commit()
     return jsonify(message=True)
 
@@ -296,7 +326,7 @@ def followers():
     for f in follows:
         usernames.append(User.query.filter_by(id=f.user).first().username)
 
-    return jsonify(message=usernames)
+    return jsonify(message=list(set(usernames)))
 
 @app.route('/favourites', methods=['GET'])
 def favourites():
@@ -306,7 +336,7 @@ def favourites():
     for f in favourites:
         usernames.append(User.query.filter_by(id=f.user).first().username)
 
-    return jsonify(message=usernames)
+    return jsonify(message=list(set(usernames)))
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

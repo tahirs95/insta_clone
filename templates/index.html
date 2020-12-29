@@ -28,15 +28,14 @@
 </nav>
 
 <div class="container bootdey">
-<div class="col-md-12 bootstrap snippets">
-
+  <div class="row">
+<div class="col-md-8 bootstrap snippets h-100">
 <div class="panel">
     <div class="panel-body">
     <!-- Newsfeed Content -->
     <!--===================================================-->
     <!--===================================================-->
     <!-- End Newsfeed Content -->
-
 
     <!-- Newsfeed Content -->
     {% for post in total_posts %}
@@ -50,12 +49,19 @@
           <p class="text-muted text-sm"><i class="fa fa-mobile fa-lg"></i>{{post.upload_date}}</p>
         </div>
         <div id="button-{{loop.index}}">
-          {% if post.username in favourite_people %}
-          <h5 class='font-weight-bold ml-3'>Followed</h5>
+          {% if post.username in follows_people %}
+          <button class="btn btn-primary btn-sm ml-3" onclick="unfollow_user({{loop.index}})">Unfollow</button>
           {% else %}
           <button class="btn btn-primary btn-sm ml-3" onclick="follow_user({{loop.index}})">Follow</button>
          {% endif %}
         </div>
+        <div id="button2-{{loop.index}}">
+          {% if post.username in favourite_people %}
+        <button class="btn btn-primary btn-sm ml-3"  onclick="unfav_user({{loop.index}})" style="height: 33px;">Unfavourite</button>
+        {% else %}
+        <button class="btn btn-primary btn-sm ml-3" onclick="fav_user({{loop.index}})" style="height: 33px;">Favourite</button>
+       {% endif %}
+      </div>
       </div>
         <p>{{post.text}}</p>
         <img class="img-responsive thumbnail w-30" src="{{post.image_url}}" alt="Image">
@@ -69,7 +75,54 @@
 {% endfor %}
 </div>
 </div>
+</div>
+<div class="col-md-4 mt-5">
+ <div class="box">
+    <h4 class="font-weight-bold text-center">Followers</h4>
+  <ul id="followers">
+
+    </ul>
+ </div>
+ <div class="box mt-3">
+  <h4 class="font-weight-bold text-center">Favourites</h4>
+<ul id="favourite">
+
+  </ul>
+</div>
+</div>
+</div>
+</div>
 <script>
+   var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/followers",
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  response.message.forEach(function(item){
+  $("#followers").append("<li>"+item+"</li>")
+  })
+
+})
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/favourites",
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  response.message.forEach(function(item){
+  $("#favourite").append("<li>"+item+"</li>")
+  })
+
+})
+
   function follow_user(count){
    var name = document.getElementById("name-"+count).getAttribute('data-name')
    var settings = {
@@ -82,7 +135,56 @@
 $.ajax(settings).done(function (response) {
   console.log(response);
   if(response.message == true){
-    document.getElementById("button-"+count).innerHTML = "<h5 class='font-weight-bold ml-3'>Followed</h5>"
+   window.location.reload()
+  }
+});
+  }
+
+  function unfollow_user(count){
+   var name = document.getElementById("name-"+count).getAttribute('data-name')
+   var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/unfollow/"+name,
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  if(response.message == true){
+    window.location.reload()
+  }
+});
+  }
+  function fav_user(count){
+   var name = document.getElementById("name-"+count).getAttribute('data-name')
+   var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/favourite/"+name,
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  if(response.message == true){
+    window.location.reload()
+  }
+});
+  }
+  function unfav_user(count){
+   var name = document.getElementById("name-"+count).getAttribute('data-name')
+   var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "/unfavourite/"+name,
+  "method": "GET"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  if(response.message == true){
+    window.location.reload()
   }
 });
   }
