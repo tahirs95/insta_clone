@@ -47,6 +47,13 @@ class Follower(db.Model):
     user = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
     follower = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 
+class Favourite(db.Model):
+    __tablename__ = 'favourites'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
+    favourite = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
+
 class Topic(db.Model):
     __tablename__ = 'topics'
 
@@ -204,7 +211,7 @@ def register():
         user = User.query.filter_by(username=username).first()
 
         if user: 
-            print("User already exists.")
+            flash("User already exists.")
             return redirect('/signup')
 
         new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
@@ -271,6 +278,35 @@ def follow(username):
     db.session.add(f)
     db.session.commit()
     return jsonify(message=True)
+
+@app.route('/favourite/<username>', methods=['GET'])
+def favourite(username):
+    user_id = User.query.filter_by(username=username).first().id
+    favourite = current_user.get_id()
+    f = Favourite(user=user_id, favourite=favourite)
+    db.session.add(f)
+    db.session.commit()
+    return jsonify(message=True)
+
+@app.route('/followers', methods=['GET'])
+def followers():
+    follower = current_user.get_id()
+    follows = Follower.query.filter_by(follower=follower).all()
+    usernames = []
+    for f in follows:
+        usernames.append(User.query.filter_by(id=f.user).first().username)
+
+    return jsonify(message=usernames)
+
+@app.route('/favourites', methods=['GET'])
+def favourites():
+    favourite = current_user.get_id()
+    favourites = Favourite.query.filter_by(favourite=favourite).all()
+    usernames = []
+    for f in favourites:
+        usernames.append(User.query.filter_by(id=f.user).first().username)
+
+    return jsonify(message=usernames)
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

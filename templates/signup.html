@@ -6,10 +6,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </head>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item mr-3">
+          <a class="btn btn-outline-secondary " href="/login">Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
 <div class="column is-4 is-offset-4 container mt-5">
     <h3 class="font-weight-bold">Sign Up</h3>
     <div class="box">
         <form method="POST" action="/signup">
+            {% for message in get_flashed_messages() %}
+                <div class="alert alert-danger text-center">{{ message }}</div>
+            {% endfor %}
             <div class="field">
                 <div class="form-group">
                     <input class="input is-large form-control" type="text" name="username" placeholder="Your Username" autofocus="" required>
@@ -21,7 +37,7 @@
                     <input class="input is-large form-control" type="password" name="password" placeholder="Your Password" required>
                 </div>
             </div>
-            <button class="button is-block is-info is-large is-fullwidth btn btn-primary btn-lg">Login</button>
+            <button class="button is-block is-info is-large is-fullwidth btn btn-primary btn-lg">Register</button>
         </form>
     </div>
 </div>
